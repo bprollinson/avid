@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title member.username ~ "'s profile" %}
+
+{% block container %}
+    <div class="row">
+        <div class="small-12 columns">
+            <ul class="breadcrumbs">
+                <li><a href="{{ path('search', { search: keyword }) }}">Search</a></li>
+                <li><a class="current">{{ member.username }}</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="small-9 columns end">
+            <div class="th left">
+                <img src="/img/{{ random(5) is divisible by(5)  ? 'male' : 'female' }}.png" height="150" width="150">
+            </div>
+
+            <div class="small-offset-3">
+                {{ random(10) is divisible by (10) ? '<span class="right label round success">online</span>' }}
+                <h2><a>{{ member.username }}'s profile</a></h2>
+                <h3 class="subheader">{{ member.address.city }}, {{ member.address.province }}, {{ member.address.country }}</h3>
+
+                <b>Age:</b> {{ member.age }}<br>
+                <b>Height:</b> {{ member.height }}<br>
+                <b>Weight:</b> {{ member.weight }}<br>
+                <b>Ethnicity:</b> {{ member.ethnicity }}<br>
+                <b>Body Type:</b> {{ member.bodyType }}<br>
+                <b>My limits are:</b> {{ member.limits }}<br>
+            </div>
+        </div>
+    </div>
+{% endblock %}

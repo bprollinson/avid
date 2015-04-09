@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title "Member's list" %}
+
+{% block container %}
+    <div class="row">
+        <div class="small-12 columns">
+            <h2>Manage Members <small>found: {{ members|length }}</small></h2>
+
+            <div class="small-6 end">
+                <a href="{{ path('member.add') }}" class="button success tiny">Add</a>
+            </div>
+        {% if members|length %}
+            <table>
+                <thead>
+                    <th></th>
+                    <th>Username</th>
+                    <th>Actions</th>
+                </thead>
+                <tbody>
+                {% for member in members %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><a href="{{ path('profile', { username: member.username }) }}">{{ member.username }}</a></td>
+                        <td>
+                            <a class="button tiny" href="#delete-{{ member.username }}" data-reveal-id="delete-{{ loop.index }}">delete</a>
+
+                            <div id="delete-{{ loop.index }}" class="reveal-modal medium" data-reveal>
+                                <h3>Are you sure you want to delete <b>{{ member.username }}</b> forever?</h3>
+                                <form class="row collapse" action="{{ path('member.delete', { username: member.username }) }}" method="post">
+                                    <div>
+                                        <label>
+                                            <input class="expanded button alert" type="submit" value="yes, do it">
+                                        </label>
+                                    </div>
+                                </form>
+                                <a class="close-reveal-modal">&#215;</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert-box alert">No members were found</div>
+        {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="/js/foundation/foundation.reveal.js"></script>
+{% endblock %}

@@ -1,0 +1,32 @@
+<phpunit
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/4.0/phpunit.xsd"
+        backupGlobals="false" backupStaticAttributes="false"
+        bootstrap="vendor/autoload.php"
+        cacheTokens="true"
+        colors="true"
+        forceCoversAnnotation="true"
+        mapTestClassNameToCoveredClassName="true"
+        strict="true" verbose="true">
+
+    <testsuites>
+        <testsuite name="Candidate Challenge Test Suite">
+            <directory>./tests</directory>
+        </testsuite>
+        <testsuite name="unit">
+            <directory>./tests/unit</directory>
+        </testsuite>
+        <testsuite name="edge-to-edge">
+            <directory>./tests/edge-to-edge</directory>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./src</directory>
+            <exclude>
+                <file>./src/app.php</file>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>

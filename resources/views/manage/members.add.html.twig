@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title 'Add member' %}
+
+{% block container %}
+    <div class="row">
+        <div class="small-6 columns">
+            <h2>Add member</h2>
+
+            {{ form(form, { action: path('member.add'), attr: { novalidate: 'novalidate' } }) }}
+        </div>
+    </div>
+{% endblock %}

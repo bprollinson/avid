@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title 'Search' %}
+
+{% block container %}
+    <div class="row">
+        <h2>Members search <small>found: {{ results }}</small></h2>
+    </div>
+
+    {% for member in members %}
+        <div class="row">
+            <div class="small-9 columns end">
+                <a class="th left" href="{{ path('profile', { username: member.username }) }}">
+                    <img src="/img/{{ random(5) is divisible by(5)  ? 'male' : 'female' }}.png" height="75" width="75">
+                </a>
+
+                <div class="row">
+                    <div class="small-9 columns">
+                        {{ random(10) is divisible by (10) ? '<span class="right label round success">online</span>' }}
+                        <h4><a href="{{ path('profile', { username: member.username }) }}">{{ member.username }}</a></h4>
+                        <h5 class="subheader">{{ member.address.city }}, {{ member.address.province }}</h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="small-3 small-offset-2 columns">
+                        <b>Age:</b> {{ member.age }}<br>
+                        <b>Height:</b> {{ member.height }}<br>
+                        <b>Weight:</b> {{ member.weight }}<br>
+                    </div>
+                    <div class="small-6 columns">
+                        <b>Limits:</b> {{ member.limits }}<br>
+                        <b>Body Type:</b> {{ member.bodyType }}<br>
+                        <b>Ethnicity:</b> {{ member.ethnicity }}<br>
+                    </div>
+                </div>
+                <hr>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div data-alert class="alert-box alert">
+                No members found
+            </div>
+        </div>
+    {% endfor %}
+
+    {% if results > results_per_page %}
+        <div class="row">
+            <div class="small-12 columns">
+                <ul class="pagination">
+                    {% if current_page > 1 %}
+                        <li class="arrow"><a href="{{ path('search', { page: current_page - 1, search: keyword }) }}">&laquo;</a></li>
+                    {% endif %}
+                    {% for page in range(1, pages) %}
+                        <li{{ page == current_page ? ' class="current"' }}><a href="{{ path('search', { page: page, search: keyword }) }}">{{ page }}</a></li>
+                    {% endfor %}
+                    {% if current_page + 1 <= pages %}
+                        <li class="arrow"><a href="{{ path('search', { page: current_page + 1, search: keyword }) }}">&raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title 'Avid Life Dating' %}</title>
+    <link rel="stylesheet" href="/css/normalize.css"/>
+    <link rel="stylesheet" href="/css/foundation.css"/>
+    <link rel="stylesheet" href="/css/global.css"/>
+    {% block stylesheets '' %}
+</head>
+<body>
+
+<nav class="top-bar" data-topbar>
+    <ul class="title-area">
+        <li class="name">
+            <h1><a href="/">Avid Life Dating</a></h1>
+        </li>
+    </ul>
+
+    <section class="top-bar-section">
+        <ul class="left">
+            <li class="has-dropdown">
+                <a href="{{ path('manage') }}">Manage</a>
+                <ul class="dropdown">
+                    <li><a href="{{ path('manage.members') }}">Members</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul class="right">
+            <li class="has-form">
+                <form action="{{ path('search') }}" method="get">
+                    <div class="row collapse">
+                        <div class="small-9 columns">
+                            <label>
+                                <input type="text" name="search"{{ keyword is defined ? " value=#{keyword}" }}>
+                            </label>
+                        </div>
+                        <div class="small-3 columns">
+                            <button type="submit" class="button expand">Search</button>
+                        </div>
+                    </div>
+                </form>
+            </li>
+        </ul>
+    </section>
+</nav>
+
+<div class="row">
+    <div class="small-12 columns">
+        {% for type, messages in app.session.flashBag.all %}
+            {% for message in messages %}
+                <div class="alert-box {{ type }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+
+{% block container '' %}
+
+<footer>
+    <div class="row">
+        <div class="small-12 columns">
+            <hr>
+            Copyright &copy; 2014 Avid Life Media
+        </div>
+    </div>
+</footer>
+<script src="/js/jquery.js"></script>
+<script src="/js/foundation/foundation.js"></script>
+<script src="/js/foundation/foundation.topbar.js"></script>
+{% block javascripts '' %}
+<script>
+    $(document).foundation();
+</script>
+</body>
+</html>
