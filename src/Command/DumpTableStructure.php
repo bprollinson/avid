@@ -17,6 +17,13 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 final class DumpTableStructure extends Command
 {
+    const DRY_RUN_HEADER = ' <comment>(dry run only)</comment>';
+
+    const HEADER_COLUMN = 'column';
+    const HEADER_TYPE = 'type';
+    const HEADER_LENGTH = 'length';
+    const HEADER_NOT_NULL = 'not null';
+
     function __construct(Connection $connection)
     {
         $this->connection = $connection;
@@ -31,32 +38,35 @@ final class DumpTableStructure extends Command
         ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Display tables only');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output, Connection $connection = NULL)
-    {
+    /**
+     * Appends the header content to the provided output interface instance
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param AbstractPlatform $p
+     *
+     * @return void
+     */
+    private function output_header(InputInterface $input, OutputInterface $output, AbstractPlatform $p) {
         $output->writeln('');
 
         $output->write('<info>Dumping the table structures</info>');
 
         if ($input->getOption('dry-run')) {
-            $output->write(' <comment>(dry run only)</comment>');
+            $output->write(self::DRY_RUN_HEADER);
         }
 
         $output->writeln('');
 
-        $dir = $input->getOption('directory');
-
-        /**
-         * @var AbstractSchemaManager $sm
-         * @var AbstractPlatform $p
-         */
-        $sm = $this->connection->getSchemaManager();
-        $p = $sm->getDatabasePlatform();
-
         $output->writeln("Platform: <comment>{$p->getName()}</comment>");
+    }
 
-        $tbls = $sm->listTables();
-
-        /** @var TableHelper $ot */
+    /**
+     * Initializes the table headers
+     * @param array $tbls
+     *
+     * @return void
+     */
+    private function initialize_table_helper($tbls) {
         $ot = $this->getHelper('table');
         $ot->setHeaders(['tables']);
 
@@ -67,53 +77,101 @@ final class DumpTableStructure extends Command
             $tbls)
         );
 
-        $ot->render($output);
+        return $ot;
+    }
 
+    /**
+     * Appends the core table information to the provided output interface
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param \Doctrine\DBAL\Schema\Table $tbl
+     * @param AbstractSchemaManager $sm
+     * @param string $dir
+     *
+     * @return void
+     */
+    private function output_table_info(InputInterface $input, OutputInterface $output, \Doctrine\DBAL\Schema\Table $tbl,
+                                       AbstractSchemaManager $sm, $dir) {
+        $output->writeln("<info>{$tbl->getName()}</info>");
+
+        /** @var TableHelper $outputTable */
+        $ot = $this->getHelper('table');
+        $ot->setHeaders([
+            self::HEADER_COLUMN,
+            self::HEADER_TYPE,
+            self::HEADER_LENGTH,
+            self::HEADER_NOT_NULL]
+        );
+
+        $cols = $tbl->getColumns();
+        foreach ($cols as $c) {
+            $ot->addRow(
+                [$c->getName(), $c->getType(), $c->getLength(), $c->getNotnull()]
+            );
+        }
+
+        $ot->render($output);
         $output->writeln('');
 
-        foreach ($tbls as $tbl) {
-            $output->writeln("<info>{$tbl->getName()}</info>");
-
-            /** @var TableHelper $outputTable */
-            $ot = $this->getHelper('table');
-            $ot->setHeaders([
-                    'column',
-                      'type',
-                     'length',
-                      'not null']
-            );
-
-            $cols = $tbl->getColumns();
-            foreach ($cols as $c) {
-                $ot->addRow(
-                    [$c->getName(), $c->getType(), $c->getLength(), $c->getNotnull()]
-                );
-            }
-
-            $ot->render($output);
-            $output->writeln('');
-
+        if ($input->getOption('dry-run') == FALSE) {
             /** @var AbstractPlatform $p */
             $p = $sm->getDatabasePlatform();
             $sql = $p->getCreateTableSQL($tbl);
 
-            if ($input->getOption('dry-run') == FALSE) {
-                $data = "";
-                foreach ($sql as $stmt) {
-                    $data .= $stmt . ';';
-                }
+            $this->write_to_file($output, $tbl, $sql, $dir);
+        }
+    }
 
-                $path = $dir . '/' . $tbl->getName() . '.sql';
-                if ($realPath = realpath($path)) {
-                    $path = $realPath;
-                }
+    /**
+     * Writes the collected output content to the provided file path
+     * @param OutputInterface $output
+     * @param \Doctrine\DBAL\Schema\Table $tbl
+     * @param array $sql
+     * @param string $dir
+     *
+     * @return void
+     */
+    private function write_to_file(OutputInterface $output, \Doctrine\DBAL\Schema\Table $tbl, $sql, $dir) {
+        $data = "";
+        foreach ($sql as $stmt) {
+            $data .= $stmt . ';';
+        }
 
-                $output->writeln("<info>Writing $path</info>");
-                file_put_contents(
-                    $path,
-                    \SqlFormatter::format($data, false)
-                );
-            }
+        $path = $dir . '/' . $tbl->getName() . '.sql';
+        if ($realPath = realpath($path)) {
+            $path = $realPath;
+        }
+
+        $output->writeln("<info>Writing $path</info>");
+            file_put_contents(
+                $path,
+                \SqlFormatter::format($data, false)
+            );
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output, Connection $connection = NULL)
+    {
+        /**
+         * @var AbstractSchemaManager $sm
+         * @var AbstractPlatform $p
+         */
+        $sm = $this->connection->getSchemaManager();
+        $p = $sm->getDatabasePlatform();
+
+        $this->output_header($input, $output, $p);
+
+        $tbls = $sm->listTables();
+
+        /** @var TableHelper $ot */
+        $ot = $this->initialize_table_helper($tbls);
+
+        $ot->render($output);
+
+        $output->writeln('');
+
+        $dir = $input->getOption('directory');
+        foreach ($tbls as $tbl) {
+            $this->output_table_info($input, $output, $tbl, $sm, $dir);
         }
 
         $output->writeln('');

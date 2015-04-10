@@ -175,11 +175,14 @@ final class Member
     }
 
     /**
+     * @param \DateTime $now Added to make unit testing deterministic
      * @return int
      */
-    public function getAge()
+    public function getAge($now = null)
     {
-        $now = new \DateTime();
+        if ($now == null) {
+            $now = new \DateTime();
+        }
 
         return $now->diff($this->dateOfBirth)->y;
     }
